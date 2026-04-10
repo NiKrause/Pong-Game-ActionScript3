@@ -12,9 +12,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg'],
       manifest: {
-        name: 'libp2p Connectivity Lab',
-        short_name: 'ConnLab',
-        description: 'Test libp2p relay connectivity, echo, bulk, Helia, WebRTC discovery',
+        name: 'P2P Pong',
+        short_name: 'P2P Pong',
+        description: 'Browser-to-browser Pong over libp2p with relay discovery and WebRTC upgrades',
         theme_color: '#0a0e1a',
         background_color: '#050810',
         display: 'standalone',
@@ -32,8 +32,6 @@ export default defineConfig({
   optimizeDeps: {
     include: [
       'libp2p',
-      'helia',
-      '@helia/unixfs',
       '@chainsafe/libp2p-gossipsub',
       '@libp2p/pubsub-peer-discovery',
       '@multiformats/multiaddr',

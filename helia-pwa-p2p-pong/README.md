@@ -1,6 +1,6 @@
-# Helia P2P Pong
+# P2P Pong
 
-This is a standalone local snapshot of `helia-connectivity-lab/apps/pwa`, repurposed into a two-browser human-vs-human Pong game.
+This is a standalone local snapshot of `helia-connectivity-lab/apps/pwa`, repurposed into a two-browser human-vs-human Pong game. The directory name is historical; the current app runtime is libp2p-based and no longer uses Helia.
 
 It keeps the original browser libp2p pieces that mattered for connectivity:
 
@@ -68,4 +68,4 @@ npm run test:e2e -- e2e/p2p-connectivity.spec.js e2e/pong-match.spec.js
 npm run build
 ```
 
-The build currently succeeds. Vite still reports a large bundle-size warning because libp2p and Helia are heavy browser dependencies.
+The build currently succeeds. Vite still reports a large bundle-size warning because libp2p is a heavy browser dependency.

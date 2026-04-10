@@ -698,15 +698,12 @@
   })
 </script>
 
-<svelte:head>
-  <title>Helia P2P Pong</title>
-</svelte:head>
-
 <main class="shell">
   <section class="hero">
     <div>
       <p class="eyebrow">Browser To Browser Pong</p>
-      <h1>Helia P2P Pong</h1>
+      <h1>P2P Pong</h1>
+      <p class="release-meta">Version 0.1.0 · committed 2026-04-10</p>
       <p class="subtitle">
         Open this page in two browsers. Both peers connect to the relay, discover each other, and libp2p upgrades toward
         WebRTC when it can.

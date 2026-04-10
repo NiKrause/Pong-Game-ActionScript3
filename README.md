@@ -1,7 +1,7 @@
 # Pong-Game-ActionScript3
 
 <p align="center">
-  <img src="helia-pwa-p2p-pong/public/pong-game.png" alt="Screenshot of the Helia P2P Pong browser game" width="920" />
+  <img src="helia-pwa-p2p-pong/public/pong-game.png" alt="Screenshot of the browser-to-browser P2P Pong game" width="920" />
 </p>
 
 <p align="center"><strong>From the original Flash project to a modern browser-to-browser Pong experiment.</strong></p>
@@ -14,7 +14,7 @@ This repository now keeps the project split into clearly named versions:
 
 - `flash-original-actionscript3/`: the original Flash / ActionScript 3 source files.
 - `flash-converted-html5/`: the first browser-playable HTML5 / JavaScript conversion of the Flash game.
-- `helia-pwa-p2p-pong/`: the newer browser-to-browser P2P Pong app built with Svelte, Helia, and libp2p.
+- `helia-pwa-p2p-pong/`: the newer browser-to-browser P2P Pong app built with Svelte and libp2p. The folder name is historical.
 
 ## Project Layout
 
@@ -45,7 +45,7 @@ This version keeps the original 550x400 stage feel with the player on the left, 
 
 ### `helia-pwa-p2p-pong`
 
-The newer multiplayer branch with browser-to-browser networking, relay discovery, and live two-player Pong over libp2p.
+The newer multiplayer branch with browser-to-browser networking, relay discovery, and live two-player Pong over libp2p. The directory still uses its original historical name.
 
 See:
 

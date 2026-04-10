@@ -105,6 +105,14 @@ h3 {
   color: var(--muted);
 }
 
+.release-meta {
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
 .hero-actions {
   margin-top: 18px;
 }

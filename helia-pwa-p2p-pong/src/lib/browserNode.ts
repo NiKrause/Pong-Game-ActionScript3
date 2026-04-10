@@ -11,10 +11,6 @@ import { pubsubPeerDiscovery } from '@libp2p/pubsub-peer-discovery'
 import { generateKeyPair } from '@libp2p/crypto/keys'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
-import { MemoryBlockstore } from 'blockstore-core'
-import { MemoryDatastore } from 'datastore-core'
-import { createHelia, type HeliaLibp2p } from 'helia'
-import { unixfs } from '@helia/unixfs'
 import { createLibp2p, type Libp2p } from 'libp2p'
 import type { IncomingStreamData, Message as PubsubMessage, Stream } from '@libp2p/interface'
 import {
@@ -138,7 +134,6 @@ const DEFAULT_RTC_CONFIGURATION = {
 
 export class ConnectivityBrowserNode {
   libp2p: Libp2p | null = null
-  helia: HeliaLibp2p<Libp2p> | null = null
   private topic: string
   private readonly bootstrapAddrs: string[]
   private readonly onDiscovery: DiscoveryListener
@@ -294,16 +289,7 @@ export class ConnectivityBrowserNode {
     this.hookGossipsubInboundDiscoveryUi(libp2p, topic)
     this.hookCircuitRelayReservationUi(libp2p)
 
-    const helia = await createHelia({
-      libp2p,
-      blockstore: new MemoryBlockstore(),
-      datastore: new MemoryDatastore(),
-      start: false,
-    })
-    await helia.start()
-
     this.libp2p = libp2p
-    this.helia = helia
   }
 
   /**
@@ -909,15 +895,6 @@ export class ConnectivityBrowserNode {
     }
   }
 
-  async addFileToHelia(file: File): Promise<{ cid: string }> {
-    const h = this.helia
-    if (!h) throw new Error('helia not started')
-    const fs = unixfs(h)
-    const buf = new Uint8Array(await file.arrayBuffer())
-    const cid = await fs.addBytes(buf)
-    return { cid: cid.toString() }
-  }
-
   async stop(): Promise<void> {
     if (this.peerUpdateEvents != null && this.peerUpdateBound != null) {
       try {
@@ -976,14 +953,6 @@ export class ConnectivityBrowserNode {
       }
     }
 
-    if (this.helia) {
-      try {
-        await this.helia.stop()
-      } catch {
-        // ignore
-      }
-      this.helia = null
-    }
     if (this.libp2p) {
       try {
         await this.libp2p.stop()
