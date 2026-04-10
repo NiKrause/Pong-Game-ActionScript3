@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pong Tutorial HTML5</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <main class="game-shell">
+    <header class="game-header">
+      <div>
+        <p class="eyebrow">HTML5 Port</p>
+        <h1>Pong Tutorial</h1>
+      </div>
+      <p class="controls">Use the Up and Down arrow keys.</p>
+    </header>
+
+    <section class="scoreboard" aria-label="Scoreboard">
+      <div>
+        <span class="score-label">Player</span>
+        <strong id="player-score">0</strong>
+      </div>
+      <div>
+        <span class="score-label">Speed Level</span>
+        <strong id="speed-level">1</strong>
+      </div>
+      <div>
+        <span class="score-label">Computer</span>
+        <strong id="computer-score">0</strong>
+      </div>
+    </section>
+
+    <canvas
+      id="game"
+      width="550"
+      height="400"
+      aria-label="Pong game canvas"
+      role="img"
+    ></canvas>
+  </main>
+
+  <script src="./game.js"></script>
+</body>
+</html>
