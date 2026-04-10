@@ -527,7 +527,7 @@ export class ConnectivityBrowserNode {
     }
   }
 
-  private getConnectionMode(libp2p: Libp2p, peerIdStr: string): 'none' | 'relay-only' | 'direct' {
+  private resolveConnectionMode(libp2p: Libp2p, peerIdStr: string): 'none' | 'relay-only' | 'direct' {
     const connections = libp2p.getConnections(peerIdFromString(peerIdStr))
     if (connections.length === 0) return 'none'
     const hasDirectConnection = connections.some((connection) => !connection.remoteAddr.toString().includes('/p2p-circuit'))
@@ -535,7 +535,7 @@ export class ConnectivityBrowserNode {
   }
 
   private getAutoDialFingerprint(libp2p: Libp2p, peerIdStr: string, multiaddrs: string[]): string | null {
-    const connectionMode = this.getConnectionMode(libp2p, peerIdStr)
+    const connectionMode = this.resolveConnectionMode(libp2p, peerIdStr)
     if (connectionMode === 'direct') return null
 
     const dialableMultiaddrs = [...new Set(multiaddrs.filter((candidate) => isDialableDiscoveryMultiaddr(candidate)))]
@@ -589,7 +589,7 @@ export class ConnectivityBrowserNode {
         type: 'auto:dial:ok',
         at: Date.now(),
         peerId: peerIdStr,
-        detail: this.getConnectionMode(libp2p, peerIdStr),
+        detail: this.resolveConnectionMode(libp2p, peerIdStr),
       })
     } catch (e) {
       const cur = this.discoveryMap.get(peerIdStr)
@@ -630,6 +630,12 @@ export class ConnectivityBrowserNode {
     return node
       .getConnections(peerIdFromString(peerIdStr))
       .map((connection) => connection.remoteAddr.toString())
+  }
+
+  getPeerConnectionMode(peerIdStr: string): 'none' | 'relay-only' | 'direct' {
+    const node = this.libp2p
+    if (node == null) return 'none'
+    return this.resolveConnectionMode(node, peerIdStr)
   }
 
   getPreferredPeerConnectionAddr(peerIdStr: string): string | null {

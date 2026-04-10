@@ -191,13 +191,86 @@
     return node?.getPreferredPeerConnectionAddr(peerId) ?? ''
   }
 
-  function peerTransportLabel(peerId: string): string {
+  type ConnectionPresentation = {
+    label: string
+    detail: string
+    tone: 'ok' | 'bad' | 'neutral'
+  }
+
+  function describeConnection(addr: string, mode: 'none' | 'relay-only' | 'direct'): ConnectionPresentation {
+    if (addr === '') {
+      return {
+        label: 'Transport pending',
+        detail: 'Waiting for the browsers to establish a live path.',
+        tone: 'neutral',
+      }
+    }
+
+    const viaRelay = addr.includes('/p2p-circuit')
+    const isWebRTC = addr.includes('/webrtc') || addr.includes('/certhash')
+    const isWs = addr.includes('/ws') || addr.includes('/wss')
+
+    if (mode === 'direct' && isWebRTC) {
+      return {
+        label: 'Direct WebRTC',
+        detail: 'The browsers are talking peer-to-peer without the relay in the media path.',
+        tone: 'ok',
+      }
+    }
+
+    if (mode === 'relay-only' && viaRelay && isWs) {
+      return {
+        label: 'Relayed WebSocket',
+        detail: 'Traffic is still flowing through the relay over a WebSocket circuit.',
+        tone: 'bad',
+      }
+    }
+
+    if (mode === 'relay-only' && viaRelay && isWebRTC) {
+      return {
+        label: 'Relayed WebRTC',
+        detail: 'The browsers are connected through the relay rather than a direct peer link.',
+        tone: 'bad',
+      }
+    }
+
+    return {
+      label: transportLabel(addr),
+      detail: viaRelay ? 'Connected through the relay path.' : 'Connected directly between peers.',
+      tone: mode === 'direct' ? 'ok' : 'neutral',
+    }
+  }
+
+  function peerConnectionPresentation(peerId: string): ConnectionPresentation {
     const addr = peerConnectionAddr(peerId)
-    if (addr !== '') return transportLabel(addr)
+    const mode = node?.getPeerConnectionMode(peerId) ?? 'none'
+    if (addr !== '') return describeConnection(addr, mode)
+
     const row = discoveryRows.find((candidate) => candidate.peerId === peerId)
-    if (row?.discoveryAddrs.some((candidate) => candidate.includes('/webrtc'))) return 'WebRTC advertised'
-    if (row?.discoveryAddrs.some((candidate) => candidate.includes('/p2p-circuit'))) return 'relay path advertised'
-    return 'discovered'
+    if (row?.discoveryAddrs.some((candidate) => candidate.includes('/webrtc'))) {
+      return {
+        label: 'WebRTC advertised',
+        detail: 'This peer advertises a direct WebRTC path, but the connection is not live yet.',
+        tone: 'neutral',
+      }
+    }
+    if (row?.discoveryAddrs.some((candidate) => candidate.includes('/p2p-circuit'))) {
+      return {
+        label: 'Relay path advertised',
+        detail: 'A relay-assisted path is visible, but the connection is not live yet.',
+        tone: 'neutral',
+      }
+    }
+    return {
+      label: 'Discovered',
+      detail: 'Peer seen on the network. Waiting for a dialable browser path.',
+      tone: 'neutral',
+    }
+  }
+
+  function activeConnectionPresentation(): ConnectionPresentation {
+    const mode = remotePeerId !== '' ? (node?.getPeerConnectionMode(remotePeerId) ?? 'none') : 'none'
+    return describeConnection(activeTransportAddr, mode)
   }
 
   function syncScoreboard(): void {
@@ -703,7 +776,7 @@
     <div>
       <p class="eyebrow">Browser To Browser Pong</p>
       <h1>P2P Pong</h1>
-      <p class="release-meta">Version 0.1.0 · committed 2026-04-10</p>
+      <p class="release-meta">Version 0.1.1 · committed 2026-04-10</p>
       <p class="subtitle">
         Open this page in two browsers. Both peers connect to the relay, discover each other, and libp2p upgrades toward
         WebRTC when it can.
@@ -755,6 +828,7 @@
 
       <div class="peer-list">
         {#each playableDiscoveryRows() as row (row.peerId)}
+          {@const peerLink = peerConnectionPresentation(row.peerId)}
           <article
             class:active-peer={remotePeerId === row.peerId}
             class="peer-card"
@@ -764,7 +838,14 @@
             <div>
               <p class="peer-id">{shortPeerId(row.peerId)}</p>
               <p class="peer-meta" data-testid="peer-card-status">{row.autoDial === 'ok' ? 'connected' : row.autoDial}</p>
-              <p class="peer-meta">{peerTransportLabel(row.peerId)}</p>
+              <p
+                class:peer-link-chip-bad={peerLink.tone === 'bad'}
+                class:peer-link-chip-ok={peerLink.tone === 'ok'}
+                class="peer-link-chip"
+              >
+                {peerLink.label}
+              </p>
+              <p class="peer-meta">{peerLink.detail}</p>
             </div>
             <button type="button" disabled={busy} onclick={() => void invitePeer(row)}>
               Play
@@ -782,13 +863,23 @@
         <div class="pill-row">
           <span class="pill">{matchStatusLabel()}</span>
           <span class="pill">{matchRole ?? 'spectator'}</span>
-          <span
-            class:ok-pill={activeTransportAddr.includes('/webrtc')}
-            class:bad-pill={activeTransportAddr !== '' && !activeTransportAddr.includes('/webrtc')}
-            class="pill"
+          <button
+            type="button"
+            aria-label={activeTransportAddr !== '' ? `Active transport multiaddress: ${activeTransportAddr}` : undefined}
+            class:ok-pill={activeConnectionPresentation().tone === 'ok'}
+            class:bad-pill={activeConnectionPresentation().tone === 'bad'}
+            class:tooltip-pill={activeTransportAddr !== ''}
+            class="pill pill-button"
+            title={activeTransportAddr !== '' ? activeTransportAddr : undefined}
           >
-            {activeTransportAddr === '' ? 'transport pending' : transportLabel(activeTransportAddr)}
-          </span>
+            {activeConnectionPresentation().label}
+            {#if activeTransportAddr !== ''}
+              <span class="tooltip-bubble" role="tooltip">
+                <span class="label">Active multiaddress</span>
+                <code>{activeTransportAddr}</code>
+              </span>
+            {/if}
+          </button>
         </div>
       </div>
 
@@ -878,6 +969,10 @@
       <div>
         <span class="label">Active transport</span>
         <p class="mono">{activeTransportAddr || 'no active p2p stream yet'}</p>
+      </div>
+      <div>
+        <span class="label">Browser link type</span>
+        <p>{activeConnectionPresentation().label}</p>
       </div>
     </div>
 
