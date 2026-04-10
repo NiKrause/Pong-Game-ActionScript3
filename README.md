@@ -6,6 +6,10 @@
 
 <p align="center"><strong>From the original Flash project to a modern browser-to-browser Pong experiment.</strong></p>
 
+<p align="center">
+  <a href="https://bafybeicsap6gmhdtku2r3bjor7l2t22mytzcyqyhmhuix7ourwrybk3ha4.ipfs.ipfs.le-space.de/"><strong>Play the live demo</strong></a>
+</p>
+
 This repository now keeps the project split into clearly named versions:
 
 - `flash-original-actionscript3/`: the original Flash / ActionScript 3 source files.
